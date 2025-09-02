@@ -1,5 +1,4 @@
 # Yocto環境建立
-1
 1. 下載依賴項 :
 ```
 sudo apt install chrpath zstd
