@@ -1,0 +1,80 @@
+From 6a98b8443afee02529f9b739d07514305b31300d Mon Sep 17 00:00:00 2001
+From: zivku <marion01992@gmail.com>
+Date: Wed, 2 Jul 2025 18:31:17 -0700
+Subject: [PATCH] sam9x60: update device tree for SPIDEV
+
+---
+ .../dts/microchip/at91-sam9x60_curiosity.dts  | 28 ++++++++++++++++++-
+ drivers/spi/spidev.c                          |  2 ++
+ 2 files changed, 29 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/microchip/at91-sam9x60_curiosity.dts b/arch/arm/boot/dts/microchip/at91-sam9x60_curiosity.dts
+index a0facc9c8b4b..f78f8b8456c6 100644
+--- a/arch/arm/boot/dts/microchip/at91-sam9x60_curiosity.dts
++++ b/arch/arm/boot/dts/microchip/at91-sam9x60_curiosity.dts
+@@ -212,7 +212,22 @@ eeprom@53 {
+ 		};
+ 	};
+ };
++&flx5 {
++	atmel,flexcom-mode = <ATMEL_FLEXCOM_MODE_SPI>;
++	status = "okay";
+ 
++	spi5: spi@400 {
++		dmas = <0>, <0>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_flx5_spi>;
++		status = "okay";
++		spidev@0 {
++			compatible = "atmel,at91rm9200-spidev";
++			reg = <0>;
++			spi-max-frequency = <2500000>;
++		};
++	};
++};
+ &flx6 {
+ 	atmel,flexcom-mode = <ATMEL_FLEXCOM_MODE_TWI>;
+ 	status = "okay";
+@@ -316,7 +331,18 @@ pinctrl_flx0_default: flx0-twi {
+ 				<AT91_PIOA 0 AT91_PERIPH_A AT91_PINCTRL_PULL_UP
+ 				 AT91_PIOA 1 AT91_PERIPH_A AT91_PINCTRL_PULL_UP>;
+ 		};
+-
++		pinctrl_flx5_spi: flx5-spi-pins {
++		    atmel,pins = <
++			    AT91_PIOA 21 AT91_PERIPH_B AT91_PINCTRL_NONE   /* MISO */
++			    AT91_PIOA 22 AT91_PERIPH_B AT91_PINCTRL_NONE   /* MOSI */
++			    AT91_PIOA 23 AT91_PERIPH_B AT91_PINCTRL_NONE   /* SCK */
++			    AT91_PIOA 8 AT91_PERIPH_B AT91_PINCTRL_NONE
++		    >;
++		};
++		pinctrl_spi5_cs: spi5-cs-pins {
++		    atmel,pins =
++			<AT91_PIOA 8 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP>;  // PA8 作為 GPIO (CS)
++		};
+ 		pinctrl_flx6_default: flx6-twi {
+ 			atmel,pins =
+ 				<AT91_PIOA 30 AT91_PERIPH_A AT91_PINCTRL_PULL_UP
+diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
+index b97206d47ec6..490d4fc0c681 100644
+--- a/drivers/spi/spidev.c
++++ b/drivers/spi/spidev.c
+@@ -715,6 +715,7 @@ static const struct spi_device_id spidev_spi_ids[] = {
+ 	{ .name = "spi-authenta" },
+ 	{ .name = "em3581" },
+ 	{ .name = "si3210" },
++	{ .name = "at91rm9200-spidev" },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(spi, spidev_spi_ids);
+@@ -736,6 +737,7 @@ static const struct of_device_id spidev_dt_ids[] = {
+ 	{ .compatible = "cisco,spi-petra", .data = &spidev_of_check },
+ 	{ .compatible = "dh,dhcom-board", .data = &spidev_of_check },
+ 	{ .compatible = "lineartechnology,ltc2488", .data = &spidev_of_check },
++	{ .compatible = "atmel,at91rm9200-spidev", .data = &spidev_of_check },
+ 	{ .compatible = "lwn,bk4", .data = &spidev_of_check },
+ 	{ .compatible = "menlo,m53cpld", .data = &spidev_of_check },
+ 	{ .compatible = "micron,spi-authenta", .data = &spidev_of_check },
+-- 
+2.25.1
+

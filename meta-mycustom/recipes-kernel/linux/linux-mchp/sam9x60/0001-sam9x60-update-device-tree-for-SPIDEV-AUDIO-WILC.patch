@@ -1,0 +1,171 @@
+From 3bff6b3c80e1e7d95f92b84e5ea14e008e5675c7 Mon Sep 17 00:00:00 2001
+From: zivku <marion01992@gmail.com>
+Date: Mon, 14 Jul 2025 02:10:23 -0700
+Subject: [PATCH] sam9x60: update device tree for SPIDEV AUDIO WILC
+
+---
+ .../dts/microchip/at91-sam9x60_curiosity.dts  | 97 ++++++++++++++++++-
+ drivers/spi/spidev.c                          |  2 +
+ 2 files changed, 97 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/boot/dts/microchip/at91-sam9x60_curiosity.dts b/arch/arm/boot/dts/microchip/at91-sam9x60_curiosity.dts
+index a0facc9c8b4b..db24f9cbf741 100644
+--- a/arch/arm/boot/dts/microchip/at91-sam9x60_curiosity.dts
++++ b/arch/arm/boot/dts/microchip/at91-sam9x60_curiosity.dts
+@@ -212,7 +212,22 @@ eeprom@53 {
+ 		};
+ 	};
+ };
++&flx5 {
++	atmel,flexcom-mode = <ATMEL_FLEXCOM_MODE_SPI>;
++	status = "okay";
+ 
++	spi5: spi@400 {
++		dmas = <0>, <0>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_flx5_spi>;
++		status = "okay";
++		spidev@0 {
++			compatible = "atmel,at91rm9200-spidev";
++			reg = <0>;
++			spi-max-frequency = <2500000>;
++		};
++	};
++};
+ &flx6 {
+ 	atmel,flexcom-mode = <ATMEL_FLEXCOM_MODE_TWI>;
+ 	status = "okay";
+@@ -238,6 +253,12 @@ uart7: serial@200 {
+ 		status = "okay";
+ 	};
+ };
++&i2s {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2s_default>;
++	#sound-dai-cells = <0>;
++	status = "disabled"; /* Conflict with QSPI. */
++};
+ 
+ &macb0 {
+ 	phy-mode = "rmii";
+@@ -264,7 +285,16 @@ pinctrl_adtrg_default: adtrg-default {
+ 			atmel,pins = <AT91_PIOB 18 AT91_PERIPH_B AT91_PINCTRL_PULL_UP>;
+ 		};
+ 	};
+-
++	i2s {
++		pinctrl_i2s_default: i2s {
++			atmel,pins =
++				<AT91_PIOB 19 AT91_PERIPH_B AT91_PINCTRL_NONE		/* I2SCK */
++					AT91_PIOB 20 AT91_PERIPH_B AT91_PINCTRL_NONE		/* I2SWS */
++					AT91_PIOB 21 AT91_PERIPH_B AT91_PINCTRL_NONE		/* I2SDIN */
++					AT91_PIOB 22 AT91_PERIPH_B AT91_PINCTRL_NONE		/* I2SDOUT */
++					AT91_PIOB 23 AT91_PERIPH_B AT91_PINCTRL_NONE>;		/* I2SMCK */
++		};
++	};
+ 	can0 {
+ 		pinctrl_can0_rx_tx: can0-rx-tx {
+ 			atmel,pins =
+@@ -316,7 +346,18 @@ pinctrl_flx0_default: flx0-twi {
+ 				<AT91_PIOA 0 AT91_PERIPH_A AT91_PINCTRL_PULL_UP
+ 				 AT91_PIOA 1 AT91_PERIPH_A AT91_PINCTRL_PULL_UP>;
+ 		};
+-
++		pinctrl_flx5_spi: flx5-spi-pins {
++		    atmel,pins = <
++			    AT91_PIOA 21 AT91_PERIPH_B AT91_PINCTRL_NONE   /* MISO */
++			    AT91_PIOA 22 AT91_PERIPH_B AT91_PINCTRL_NONE   /* MOSI */
++			    AT91_PIOA 23 AT91_PERIPH_B AT91_PINCTRL_NONE   /* SCK */
++			    AT91_PIOA 8 AT91_PERIPH_B AT91_PINCTRL_NONE
++		    >;
++		};
++		pinctrl_spi5_cs: spi5-cs-pins {
++		    atmel,pins =
++			<AT91_PIOA 8 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP>;  // PA8 作為 GPIO (CS)
++		};
+ 		pinctrl_flx6_default: flx6-twi {
+ 			atmel,pins =
+ 				<AT91_PIOA 30 AT91_PERIPH_A AT91_PINCTRL_PULL_UP
+@@ -508,7 +549,59 @@ &pioD 18 GPIO_ACTIVE_HIGH
+ &usb2 {
+ 	status = "okay";
+ };
++&i2s {
++	status = "okay";
++};
+ 
++&i2c0 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	wm8731: codec@1a {
++		compatible = "wlf,wm8731";
++		reg = <0x1a>;
++	};
++};
++&sdmmc1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	status = "okay";
++	mmc-pwrseq = <&wifi_pwrseq>;
++	wilc: wilc@1 {
++		compatible = "microchip,wilc1000", "microchip,wilc3000";
++		reg = <1>;
++		bus-width = <4>;
++		status = "okay";
++	};
++};
++&{/} {
++	sound {
++		compatible = "mikroe,mikroe-proto";
++		model = "wm8731 @ sam9x60ek";
++		i2s-controller = <&i2s>;
++		audio-codec = <&wm8731>;
++		dai-format = "i2s";
++        };
++        wifi_pwrseq: wifi_pwrseq {
++		compatible = "mmc-pwrseq-wilc1000", "mmc-pwrseq-wilc";
++		reset-gpios = <&pioA 14 GPIO_ACTIVE_HIGH>;
++		powerdown-gpios = <&pioC 8 GPIO_ACTIVE_HIGH>;
++		pinctrl-0 = <&pinctrl_wilc_pwrseq_default>;
++		pinctrl-names = "default";
++		status = "okay";
++	};
++};
++&pinctrl {
++	wilc_pwrseq {
++		pinctrl_wilc_pwrseq_default: pinctrl_wilc_pwrseq {
++			atmel,pins = <AT91_PIOC 8 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_DOWN
++				      AT91_PIOA 14 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_DOWN>;
++		};
++	};
++};
++&qspi {
++	status = "disabled";
++};
+ &watchdog {
+ 	status = "okay";
+ };
++
+diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
+index b97206d47ec6..490d4fc0c681 100644
+--- a/drivers/spi/spidev.c
++++ b/drivers/spi/spidev.c
+@@ -715,6 +715,7 @@ static const struct spi_device_id spidev_spi_ids[] = {
+ 	{ .name = "spi-authenta" },
+ 	{ .name = "em3581" },
+ 	{ .name = "si3210" },
++	{ .name = "at91rm9200-spidev" },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(spi, spidev_spi_ids);
+@@ -736,6 +737,7 @@ static const struct of_device_id spidev_dt_ids[] = {
+ 	{ .compatible = "cisco,spi-petra", .data = &spidev_of_check },
+ 	{ .compatible = "dh,dhcom-board", .data = &spidev_of_check },
+ 	{ .compatible = "lineartechnology,ltc2488", .data = &spidev_of_check },
++	{ .compatible = "atmel,at91rm9200-spidev", .data = &spidev_of_check },
+ 	{ .compatible = "lwn,bk4", .data = &spidev_of_check },
+ 	{ .compatible = "menlo,m53cpld", .data = &spidev_of_check },
+ 	{ .compatible = "micron,spi-authenta", .data = &spidev_of_check },
+-- 
+2.25.1
+

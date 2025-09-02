@@ -1,0 +1,12 @@
+[Unit]
+Description=WiFi Auto Connect Service
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/root/wifi-auto.sh
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
+
