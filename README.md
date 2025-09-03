@@ -6,9 +6,14 @@ sudo apt install chrpath zstd
 ```
 sudo apt install git-lfs
 ```
+```
+sudo apt install build-essential gawk wget git diffstat unzip texinfo gcc-multilib \
+libncurses5-dev libncursesw5-dev python3 python3-pip python3-pexpect \
+xz-utils debianutils iputils-ping libsdl1.2-dev lz4 cpio
+```
 2. 下載poky :
 ```
-git clone https://git.yoctoproject.org/poky && cd poky && git checkout -b scarthgap scarthgap-5.0.3 && cd –
+git clone https://git.yoctoproject.org/poky && cd poky && git checkout -b scarthgap scarthgap-5.0.3 && cd -
 ```
 3. 下載通用軟體包 :
 ```
@@ -20,7 +25,7 @@ git clone https://github.com/linux4sam/meta-atmel.git && cd meta-atmel && git ch
 ```
 5. 下載ARM layer :
 ```
-git clone https://git.yoctoproject.org/meta-arm && cd meta-arm && git checkout -b scarthgap yocto-5.0 && cd –
+git clone https://git.yoctoproject.org/meta-arm && cd meta-arm && git checkout -b scarthgap yocto-5.0 && cd -
 ```
 6. 下載holystone layer :
 ```
