@@ -40,7 +40,7 @@ export TEMPLATECONF=${TEMPLATECONF:-../meta-atmel/conf/templates/default}
 source oe-init-build-env build-microchip
 ```
 ```
-bitbake-layers add-layer ../../meta-holystone
+MACHINE=sam9x60-curiosity bitbake-layers add-layer ../../meta-holystone
 ```
 7. 編譯燒錄映像 :
 ```
