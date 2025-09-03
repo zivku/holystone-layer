@@ -1,0 +1,25 @@
+From 7ef3f3d2448d71c8986ea497987a8eed21879c73 Mon Sep 17 00:00:00 2001
+From: zivku <marion01992@gmail.com>
+Date: Tue, 2 Sep 2025 21:20:12 -0700
+Subject: [PATCH] sam9x60: update overlay for LCD/Touch
+
+---
+ sam9x60_curiosity/sam9x60_curiosity_pda5.dtso | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sam9x60_curiosity/sam9x60_curiosity_pda5.dtso b/sam9x60_curiosity/sam9x60_curiosity_pda5.dtso
+index cf51149..33c68e0 100644
+--- a/sam9x60_curiosity/sam9x60_curiosity_pda5.dtso
++++ b/sam9x60_curiosity/sam9x60_curiosity_pda5.dtso
+@@ -12,7 +12,7 @@
+ 
+ #include "dt-bindings/pinctrl/at91.h"
+ 
+-&i2c6 {
++&i2c0 {
+ 	dmas = <0>, <0>;
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+-- 
+2.25.1
+
